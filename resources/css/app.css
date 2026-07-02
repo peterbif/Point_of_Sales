@@ -1,0 +1,75 @@
+.form-label {
+    margin-bottom: 0px !important;
+}
+
+label.required::after {
+    content: " *";
+    color: red;
+}
+
+.btn-close {
+    width: 3rem;
+    height: 2rem;
+    padding: 0px;
+}
+
+.modal-content {
+    background: whitesmoke;
+}
+
+.table tbody tr {
+    vertical-align: middle;
+}
+
+.form-check-input {
+    border-color: #6e6e6e;
+}
+
+.form-switch .form-check-input {
+    width: 3em;
+    height: 1.5em;
+}
+
+.form-check-input[type=checkbox]:indeterminate.permission,
+.form-check-input:checked.permission {
+    background-color: green !important;
+    border-color: green !important;
+}
+
+.form-check-input[type=checkbox]:indeterminate#permission,
+.form-check-input:checked#permission {
+    background-color: red !important;
+    border-color: red !important;
+}
+
+.pagetitle {
+    margin-bottom: 1rem;
+}
+
+.bi-sort-alpha-down-alt,
+.bi-sort-alpha-down,
+.bi-arrow-down-up {
+    font-size: 12px;
+}
+
+.table>:not(caption)>*>* {
+    padding: 0.5rem 1rem !important;
+}
+
+span.menu-item {
+    background: darkslateblue !important;
+    color: white !important;
+    border-color: white !important;
+    font-size: 18px;
+}
+
+span.active {
+    background: #b02a37 !important;
+    color: white !important;
+    border-color: white !important;
+    font-size: 18px;
+}
+
+.vl-overlay .vl-background {
+    opacity: 0.2 !important;
+}

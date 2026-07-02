@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+class CheckSubscription
+{
+    /**
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+       
+
+        if (auth()->check()) {
+            $user = auth()->user();
+
+              // ✅ Bypass for superadmin
+            if ($user->role === 'superadmin2') {
+                return $next($request);
+            }
+
+    
+            $expiryDate = $user->created_at->copy()->addYear();
+    
+            if (now()->greaterThan($expiryDate)) {
+                auth()->logout();
+    
+                return response()->json([
+                    'message' => 'Subscription expired'
+                ], 403);
+            }
+        }
+    
+    
+       
+       
+       
+        return $next($request);
+    }
+}
