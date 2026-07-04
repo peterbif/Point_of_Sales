@@ -4,25 +4,19 @@
     <!-- Share Modal -->
     <ShareModal ref="messageBox"></ShareModal>
 
-    <!-- Form Modal -->
+    <!-- Product Form Modal -->
     <div
-      class="modal fade"
-      ref="formModal"
-      tabindex="-1"
-      aria-hidden="true"
-      data-bs-keyboard="false"
-      data-bs-backdrop="static"
-      data-bs-focus="false"
-    >
-      <div class="modal-dialog">
+      class="modal fade" id="exampleModal33"     ref="productModal"
+      tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel33" aria-hidden="true">
+      <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header py-2 bg-secondary text-light">
-            <h5 class="modal-title" style="font-weight: bold">
+            <h5 class="modal-title" id="exampleModalLabel33" style="font-weight: bold">
               {{ form.id ? "Edit" : "Add" }} Product
             </h5>
           </div>
           <div class="modal-body">
-            <form @submit.prevent="saveData" id="form">
+            <form id="form">
               <div class="row">
                 <div class="col-12 mb-3">
                   <label class="form-label">Image</label>
@@ -277,7 +271,7 @@
               type="button"
               class="btn btn-secondary"
               data-bs-dismiss="modal"
-              @click="closeModal"
+              @click="closeModal33"
             >
               <i class="bi bi-x-lg"></i> Cancel
             </button>
@@ -299,6 +293,7 @@
 
                 )
               "
+              @click="saveData"
             >
               <i class="bi bi-floppy" style="padding-right: 3px"></i> Save
             </button>
@@ -308,7 +303,6 @@
     </div>
 
     <!--Form Modal Quantity-->
-
     <div
       class="modal fade"
       ref="formModalQuantity"
@@ -366,7 +360,7 @@
       type="button"
       class="btn btn-primary"
       style="float: right"
-      @click="openModal"
+      @click="openModal33"
     >
       <i class="bi bi-plus-circle"></i> Add New
     </button>
@@ -1023,6 +1017,10 @@
     </div>
   </div>
 </div>
+
+
+
+
   </div>
 </template>
 <script setup>
@@ -1053,6 +1051,8 @@ import {useProductStore} from "@/store/product"
 import PrintSingleProductBarcode from "./PrintBarcode.vue";
 import { Alert } from "bootstrap";
 // import JsBarcode from "jsbarcode"
+
+import Swal from "sweetalert2";
 
 const props = defineProps({
   code: String,
@@ -1088,7 +1088,8 @@ const dateConfig = ref({
   time_24hr: true,
 });
 
- 
+
+const productModal = ref(null);
 
   const stock_alert_days = ref(60);
   const stock_alert_qty_very_low = ref(5);
@@ -1114,21 +1115,13 @@ const form = ref({
   category_name: null,
   // quantities:[],
 });
+
+
+
 const filter = ref({
   name: null,
   product_category_id: 0,
-  barcode: null,
-  expiry_date: new Date(),
-  amount: null,
-  unit_price: null,
-  stock_alert_days: 60,
-  stock_alert_qty_very_low:5,
-  stock_alert_qty_low:10,
-  wholesales_price:null,
-  inventory: null,
-  image: null,
-  image_preview: null,
-  image_remove: null,
+
   sortBy: null,
   orderBy: null,
   page: 1,
@@ -1163,6 +1156,33 @@ computed(() => unreadAlertsCount);
 //   { deep: true }
 // );
 
+const openModal33 = () => {
+    clearForm33();
+  const modal = Modal.getOrCreateInstance(
+        document.getElementById("exampleModal33")
+    );
+    modal.show();
+  
+  };
+
+
+const openModal44  = () => {
+
+  const modal = Modal.getOrCreateInstance(
+        document.getElementById("exampleModal33")
+    );
+    modal.show();
+  
+  };
+
+
+const closeModal33 = () => {
+  const modal = Modal.getOrCreateInstance(
+        document.getElementById("exampleModal33")
+    );
+    modal.hide();
+  };
+
 const setupModal = (modalRef, instanceRef) => {
   if (!modalRef.value) return;
 
@@ -1193,6 +1213,13 @@ onBeforeUnmount(() => {
 const isPageLoading = ref(true);
 
 onMounted(async () => {
+
+
+ productModal.value = await new Modal(
+        document.getElementById("exampleModal33")
+    );
+
+
   isPageLoading.value = true;
 
   // ✅ Setup modals
@@ -1229,14 +1256,6 @@ onUnmounted(() => {
 const clearFilter = () => {
   filter.value.name = null;
   filter.value.product_category_id = null;
-  filter.value.barcode = null;
-  filter.value.expiry_date = new Date();
-  filter.value.amount  = null;
-  filter.value.unit_price  = null;
-  filter.value.inventory  = null;
-  filter.value.image  = null;
-  filter.value.image_preview  = null;
-  filter.value.image_remove  = null;
   dataList.value = [];
   filter.value.sortBy = null;
   filter.value.orderBy = null;
@@ -1244,18 +1263,42 @@ const clearFilter = () => {
 };
 
 
-const clearFilter2 = () => {
-  filter.value.name = null;
-  filter.value.product_category_id = null;
-  filter.value.barcode = null;
-  filter.value.expiry_date = new Date();
-  filter.value.amount  = null;
-  filter.value.unit_price  = null;
-  filter.value.inventory  = null;
-  filter.value.image  = null;
-  filter.value.image_preview  = null;
-  filter.value.image_remove  = null;
+// const  clearForm33 = () => {
+
+//   form.value.name = null;
+//   form.value.product_category_id = null;
+//   form.value.barcode = null;
+//   form.value.expiry_date = new Date();
+//   form.value.amount  = null;
+//   form.value.unit_price  = null;
+//   form.value.inventory  = null;
+//   form.value.image  = null;
+//   form.value.image_preview  = null;
+//   form.value.image_remove  = null;
   
+// };
+
+const clearForm33 = () => {
+  form.value = {
+    id: null,
+    name: null,
+    product_category_id: null,
+    category_name: null,
+    barcode: null,
+    expiry_date: new Date().toISOString().split("T")[0],
+    amount: null,
+    unit_price: null,
+    wholesales_price: null,
+    inventory: null,
+    stock_alert_days: 60,
+    stock_alert_qty_very_low:5,
+    stock_alert_qty_low: 10,
+    image: null,
+    image_preview: null,
+    image_remove: null,
+  };
+
+  errors.value = {};
 };
 
 
@@ -1369,31 +1412,7 @@ setTimeout(() => {
 
 
 // add or create
-const openModal = () => {
 
-  clearFilter2();
-  form.value.stock_alert_days = stock_alert_days.value;
-  form.value.stock_alert_qty_low = stock_alert_qty_low.value;
-  form.value.stock_alert_qty_very_low = stock_alert_qty_very_low.value
-  form.value.category_name = null;
-  isLoading.value = false;
-  form.value.image_preview = defaultImage;
-  form.value.image_remove = null;
-  formModalInstance.value?.show();
-  formModalInstance2.value?.hide();
-  formModalInstance3.value?.hide();
-};
-
-const closeModal = () => {
-  clearFilter2();
-  form.value.category_name = null;
-  isLoading.value = false;
-  form.value.image_preview = null;
-  form.value.image_remove = null;
-  formModalInstance.value?.hide();
-  formModalInstance2.value?.hide();
-  formModalInstance3.value?.hide();
-};
 
 const closeModal2 = () => {
   form.value.inventory = null;
@@ -1477,6 +1496,17 @@ const store2 = useStocktore();
 
 const productStore = useProductStore();
 
+const Toast = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 5000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  },
+});
 
 const saveCategoryProduct = async (e) => {
   e.preventDefault();
@@ -1504,56 +1534,75 @@ const saveCategoryProduct = async (e) => {
 
 const saveData = async (e) => {
   e.preventDefault();
+
   isLoading.value = true;
   errors.value = null;
 
   try {
-    const response = await axios.post("api/product/save", form.value, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    });
+    const { data } = await axios.post(
+      "api/product/save",
+      form.value,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
 
-    if (response?.data?.success) {
-      formModalInstance.value?.hide();
-      messageBox.value?.showModal('Save! succesfully');
-       getData(true);
-      clearFilter2();
-    } else {
-      errors.value = response?.data?.errors || ["Unknown error occurred"];
-      messageBox.value?.showModal(errors.value);
+    if (!data.success) {
+      errors.value = data.errors || ["Unknown error occurred"];
+
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: Array.isArray(errors.value)
+          ? errors.value.join("\n")
+          : errors.value,
+      });
+
       setFocus(autofocus);
+      return;
     }
-  } catch (error) {
-    // Server responded with error status (4xx, 5xx)
-    if (error.response) {
-      console.error("Server Error:", error.response);
+    closeModal33();
+   // getData(true);
+    clearForm33();
 
+    await Toast.fire({ icon: "success",title: "Product saved successfully!",});
+  } catch (error) {
+    console.error(error);
+
+    let message = "An unexpected error occurred.";
+
+    if (error.response) {
       if (error.response.status === 422) {
         errors.value = error.response.data.errors;
+
+        message = Object.values(errors.value)
+          .flat()
+          .join("\n");
       } else if (error.response.status === 500) {
-        errors.value = ["Internal server error. Please try again."];
+        message = "Internal server error. Please try again.";
       } else {
-        errors.value = error.response.data?.message || [
-          "Unexpected error occurred",
-        ];
+        message =
+          error.response.data?.message ||
+          "An unexpected server error occurred.";
       }
-    }
-    // Request made but no response (network error)
-    else if (error.request) {
-      console.error("Network Error:", error.request);
-      errors.value = ["Network error. Please check your connection."];
-    }
-    // Something else happened
-    else {
-      console.error("Error:", error.message);
-      errors.value = [error.message];
+    } else if (error.request) {
+      message = "Network error. Please check your internet connection.";
+    } else {
+      message = error.message;
     }
 
-    messageBox.value?.showModal(errors.value);
+    Toast.fire({
+  icon: "error",
+  title: message,
+});
+
     setFocus(autofocus);
   } finally {
     isLoading.value = false;
+    getData(true);
+
   }
 };
 
@@ -1635,51 +1684,130 @@ const sortData = (field) => {
 };
 
 // edit
-const editData = (id) => {
-  form.value.category_name = null;
-  isLoading.value = true;
-  axios
-    .get("api/product/edit/" + id)
-    .then((response) => {
-      Object.keys(form.value).forEach((key) => {
-        if (key in response.data) {
-          form.value[key] = response.data[key];
-        }
-      });
-      form.value.image_preview = form.value.image
-        ? "storage/" + form.value.image
-        : defaultImage;
-      form.value.image = null;
-      form.value.image_remove = null;
-      form.value.category_name = response.data.category_name;
-      // form.value.barcode = response?.data?.data?.barcode;
-      // form.value.expiry_date = response?.data?.data?.expiry_date;
-      formModalInstance.value.show();
-    })
-    .catch((ex) => {
-      console.log(ex);
-    })
-    .finally(() => {
-      isLoading.value = false;
-    });
-};
+// const editData = (id) => {
+//   form.value.category_name = null;
+//   isLoading.value = true;
+//   axios
+//     .get("api/product/edit/" + id)
+//     .then((response) => {
+
+//       // alert(response.data.name)
+//       Object.keys(form.value).forEach((key) => {
+//         if (key in response.data) {
+//           form.value[key] = response.data[key];
+//         }
+//       });
+//       form.value.image_preview = form.value.image
+//         ? "storage/" + form.value.image
+//         : defaultImage;
+//       form.value.image = null;
+//       form.value.image_remove = null;
+//       form.value.category_name = response.data.category_name;
+//         openModal33();
+//     })
+//     .catch((ex) => {
+//       console.log(ex);
+//     })
+//     .finally(() => {
+//       isLoading.value = false;
+//     });
+// };
+
+
 
 // delete
-const deleteData = (id) => {
-  messageBox.value.showModal(4, () => {
-    isLoading.value = true;
-    axios
-      .delete("api/product/delete/" + id)
-      .then(() => {
-        getData(true);
-      })
-      .catch((ex) => {
-        console.log(ex);
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
+// const deleteData = (id) => {
+//   messageBox.value.showModal(4, () => {
+//     isLoading.value = true;
+//     axios
+//       .delete("api/product/delete/" + id)
+//       .then(() => {
+//         getData(true);
+//       })
+//       .catch((ex) => {
+//         console.log(ex);
+//       })
+//       .finally(() => {
+//         isLoading.value = false;
+//       });
+//   });
+// };
+
+
+const deleteData = async (id) => {
+  const result = await Swal.fire({
+    title: "Delete Product?",
+    text: "You won't be able to undo this action!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#6c757d",
+    confirmButtonText: "Yes, delete it!",
+    cancelButtonText: "Cancel",
   });
+
+  if (!result.isConfirmed) return;
+
+  isLoading.value = true;
+
+  try {
+    await axios.delete(`api/product/delete/${id}`);
+
+    await Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "success",
+      title: "Product deleted successfully!",
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true,
+    });
+
+    getData(true);
+  } catch (error) {
+    console.error(error);
+
+    Swal.fire({
+      icon: "error",
+      title: "Delete Failed",
+      text:
+        error.response?.data?.message ||
+        "An error occurred while deleting the product.",
+    });
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const editData = async (id) => {
+  isLoading.value = true;
+
+  try {
+    const { data } = await axios.get(`api/product/edit/${id}`);
+
+    Object.assign(form.value, data);
+
+    form.value.image_preview = data.image
+      ? `storage/${data.image}`
+      : defaultImage;
+
+    form.value.image = null;
+    form.value.image_remove = null;
+
+    openModal44();
+  } catch (error) {
+    console.error(error);
+
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text:
+        error.response?.data?.message ||
+        "Unable to load product details.",
+    });
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 // get product category list

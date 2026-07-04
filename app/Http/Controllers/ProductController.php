@@ -457,12 +457,38 @@ class ProductController extends Controller
    
    
    
+    // public function edit(Request $request)
+
+
+    // {
+    //     return response()->json(Product::join('product_categories', 'product_categories.id', '=', 'products.product_category_id')->select('products.id as id', 'products.name as name', 'product_category_id', 'product_categories.name as category_name', 'unit_price', 'image', 'products.inventory', 'products.barcode', 'products.expiry_date',  'products.wholesales_price', 'products.stock_alert_days', 'products.stock_alert_qty_very_low','products.stock_alert_qty_low')->findOrFail($request->id));
+    // }
+
+
+
     public function edit(Request $request)
-
-
-    {
-        return response()->json(Product::join('product_categories', 'product_categories.id', '=', 'products.product_category_id')->select('products.id as id', 'products.name as name', 'product_category_id', 'product_categories.name as category_name', 'unit_price', 'image', 'products.inventory', 'products.barcode', 'products.expiry_date',  'products.wholesales_price', 'products.stock_alert_days', 'products.stock_alert_qty_very_low','products.stock_alert_qty_low')->findOrFail($request->id));
-    }
+{
+    return response()->json(
+        Product::join('product_categories', 'product_categories.id', '=', 'products.product_category_id')
+            ->select(
+                'products.id',
+                'products.name',
+                'products.product_category_id',
+                'product_categories.name as category_name',
+                'products.unit_price',
+                'products.image',
+                'products.inventory',
+                'products.barcode',
+                'products.expiry_date',
+                'products.wholesales_price',
+                'products.stock_alert_days',
+                'products.stock_alert_qty_very_low',
+                'products.stock_alert_qty_low'
+            )
+            ->where('products.id', $request->id)
+            ->firstOrFail()
+    );
+}
 
     public function delete(Request $request)
     {
