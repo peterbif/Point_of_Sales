@@ -18,33 +18,28 @@
           <div class="modal-body">
             <form id="form">
               <div class="row">
-                <div class="col-12 mb-3">
-                  <label class="form-label">Image</label>
-                  <div
-                    style="position: relative; width: 40%"
-                    :class="{ 'is-invalid': errors.image }"
-                  >
-                    <i
-                      class="bi bi-x-circle fs-3 m-0 p-0 text-danger"
-                      style="
-                        position: absolute;
-                        right: 5px;
-                        top: -2px;
-                        cursor: pointer;
-                      "
-                      @click.stop="removeImage"
-                    ></i>
-                    <img
-                      :src="form.image_preview"
-                      style="width: 100%; cursor: pointer"
-                      class="img-thumbnail"
-                      @click="upload"
-                    />
-                  </div>
-                  <span v-if="errors.image" class="invalid-feedback">
-                    {{ errors.image[0] }}
-                  </span>
-                </div>
+                <div
+  style="position: relative; width: 40%"
+  :class="{ 'is-invalid': errors?.image }"
+>
+  <i
+    v-if="form"
+    class="bi bi-x-circle fs-3 m-0 p-0 text-danger"
+    style="position:absolute;right:5px;top:-2px;cursor:pointer"
+    @click.stop="removeImage"
+  ></i>
+
+  <img
+    :src="form?.image_preview || defaultImage"
+    class="img-thumbnail"
+    style="width:100%;cursor:pointer"
+    @click="upload"
+  />
+
+  <span v-if="errors?.image" class="invalid-feedback">
+    {{ errors.image[0] }}
+  </span>
+</div>
                 <div class="col-12 mb-3">
                   <label class="form-label required">Name</label>
                   <input
@@ -212,7 +207,7 @@
                 <div class="col-12 mb-3">
                   <label class="form-label">Inventory</label>
                   <input
-                    type="text"
+                    type="number"
                     :class="['form-control', { 'is-invalid': errors.order }]"
                     v-model="form.inventory"
                   />
@@ -270,7 +265,7 @@
             <button
               type="button"
               class="btn btn-secondary"
-              data-bs-dismiss="modal"
+            
               @click="closeModal33"
             >
               <i class="bi bi-x-lg"></i> Cancel
@@ -360,7 +355,7 @@
       type="button"
       class="btn btn-primary"
       style="float: right"
-      @click="openModal33"
+      @click="createProduct()"
     >
       <i class="bi bi-plus-circle"></i> Add New
     </button>
@@ -373,7 +368,7 @@
       <div class="col">
         <div class="card">
           <div class="card-body">
-            <form @submit.prevent="getData(true)">
+            <form @submit.prevent="SearchProduct()">
               <div class="row pt-4">
                 <div class="col-md-10">
                   <div class="row justify-content-start">
@@ -423,7 +418,7 @@
                   </button>
                 </div> -->
 
-                <div class="col-12 col-md-4 col-lg-2">
+        <div class="col-12 col-md-4 col-lg-2">
   <div class="d-flex flex-column flex-md-row justify-content-md-end gap-2 mt-2 mt-md-0">
     
     <button
@@ -449,8 +444,13 @@
       @click="productStore.getAllProducts();
 "
     >
-      <i class="bi bi-briefcase-fill"></i> 
+      <i class="bi bi-briefcase-fill"></i> Product List
     </button>
+
+     <router-link  to="/product-deleted"  class="btn btn-secondary w-150 w-md-auto bi bi-pen"
+      >Restore Product</router-link>
+
+
 
   </div>
 </div>
@@ -1120,12 +1120,15 @@ const form = ref({
 
 const filter = ref({
   name: null,
-  product_category_id: 0,
+  product_category_id: null,
 
   sortBy: null,
   orderBy: null,
   page: 1,
 });
+
+
+
 const dataList = ref([]);
 
 const stockalert = ref([]);
@@ -1157,31 +1160,54 @@ computed(() => unreadAlertsCount);
 // );
 
 const openModal33 = () => {
+    // clearForm33();
+  const modal = Modal.getOrCreateInstance(
+        document.getElementById("exampleModal33")
+    );
+    modal.show();
+  
+  };
+
+  const createProduct = () => {
     clearForm33();
-  const modal = Modal.getOrCreateInstance(
-        document.getElementById("exampleModal33")
-    );
-    modal.show();
-  
-  };
+    openModal33();
+};
 
 
-const openModal44  = () => {
 
-  const modal = Modal.getOrCreateInstance(
-        document.getElementById("exampleModal33")
-    );
-    modal.show();
-  
-  };
 
+// const closeModal33 = () => {
+//     const modalElement = document.getElementById("exampleModal33");
+//     const modal = Modal.getOrCreateInstance(modalElement);
+
+//     modalElement.addEventListener(
+//         "hidden.bs.modal",
+//         () => {
+//             getData(true);
+//         },
+//         { once: true }
+//     );
+
+//     modal.hide();
+// };
 
 const closeModal33 = () => {
-  const modal = Modal.getOrCreateInstance(
-        document.getElementById("exampleModal33")
-    );
+  const element = document.getElementById("exampleModal33");
+  const modal = Modal.getInstance(element);
+
+  if (modal) {
     modal.hide();
-  };
+  }
+
+  document.body.classList.remove("modal-open");
+
+  document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
+    backdrop.remove();
+  });
+
+  document.body.style.removeProperty("padding-right");
+};
+
 
 const setupModal = (modalRef, instanceRef) => {
   if (!modalRef.value) return;
@@ -1236,7 +1262,7 @@ onMounted(async () => {
   await Promise.all([
     getData(true),
     getProductCategoryList(),
-    store2.getStockAlert(),
+    // store2.getStockAlert(),
     store2.getAllStockAlerts(),
   ]);
 
@@ -1500,7 +1526,7 @@ const Toast = Swal.mixin({
   toast: true,
   position: "top-end",
   showConfirmButton: false,
-  timer: 5000,
+  timer: 3000,
   timerProgressBar: true,
   didOpen: (toast) => {
     toast.onmouseenter = Swal.stopTimer;
@@ -1516,7 +1542,7 @@ const saveCategoryProduct = async (e) => {
 
   if (result.success) {
     // refresh category list
-    await getProductCategoryList();
+    getProductCategoryList();
 
     form.value.product_category_id = "";
 
@@ -1577,6 +1603,7 @@ const saveData = async (e) => {
       if (error.response.status === 422) {
         errors.value = error.response.data.errors;
 
+
         message = Object.values(errors.value)
           .flat()
           .join("\n");
@@ -1591,6 +1618,7 @@ const saveData = async (e) => {
       message = "Network error. Please check your internet connection.";
     } else {
       message = error.message;
+
     }
 
     Toast.fire({
@@ -1602,6 +1630,8 @@ const saveData = async (e) => {
   } finally {
     isLoading.value = false;
     getData(true);
+    // closeModal33();
+
 
   }
 };
@@ -1645,7 +1675,7 @@ const getData = (resetPge = false) => {
   if (resetPge) {
     filter.value.page = 1;
     axios
-      .post("api/product/list", filter.value)
+      .post("api/product/list")
       .then((response) => {
         if (response.data.success) {
           dataList.value = response.data.data;
@@ -1660,6 +1690,51 @@ const getData = (resetPge = false) => {
   }
 };
 
+
+
+
+
+
+const SearchProduct = () => {
+  // Stop if both filters are empty
+  if (!filter.value.name && !filter.value.product_category_id) {
+    Toast.fire({
+      icon: "warning",
+      title: "Please enter a product name or select a category.",
+    });
+    return;
+  }
+
+  isLoading.value = true;
+  errors.value = {};
+
+  axios
+    .post("api/product/searchProduct", {
+      name: filter.value.name,
+      product_category_id: filter.value.product_category_id,
+    })
+    .then((response) => {
+      if (response.data.success) {
+        dataList.value = response.data.data;
+      } else {
+        errors.value = response.data.errors || {};
+        setFocus(autofocus);
+      }
+    })
+    .catch((error) => {
+      console.error(error);
+
+      Toast.fire({
+        icon: "error",
+        title: "Unable to search products.",
+      });
+
+      setFocus(autofocus);
+    })
+    .finally(() => {
+      isLoading.value = false;
+    });
+};
 // Pagination
 const paginate = (page_number) => {
   filter.value.page = page_number;
@@ -1794,7 +1869,7 @@ const editData = async (id) => {
     form.value.image = null;
     form.value.image_remove = null;
 
-    openModal44();
+    openModal33();
   } catch (error) {
     console.error(error);
 

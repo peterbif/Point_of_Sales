@@ -83,8 +83,11 @@ Route::middleware(['auth:sanctum', 'subscription'])->group(function () {
 
     // Product Category
     Route::prefix('product-category')->controller(ProductCategoryController::class)->group(function () {
+       
         Route::post('list', 'list');
     
+        Route::post('searchCategory', 'searchCategory');
+
         Route::get('edit/{id}',  'edit');
         Route::match(['post', 'put'], 'save', 'save');
         Route::delete('delete/{id}', 'delete');
@@ -93,6 +96,14 @@ Route::middleware(['auth:sanctum', 'subscription'])->group(function () {
     // Product
     Route::prefix('product')->controller(ProductController::class)->group(function () {
         Route::post('list', 'list');
+        Route::post('product-deleted', 'productdeleted');
+
+        Route::post( 'product-deleted/edit/{id}', 'editDeleted');
+
+        Route::post('searchProduct', 'searchProduct');
+
+        
+        
         Route::get('getAllProducts', 'getAllProducts');
         Route::get('getAllProductCategories', 'getAllProductCategories');
         Route::get('stock-alerts', 'getStockAlerts');

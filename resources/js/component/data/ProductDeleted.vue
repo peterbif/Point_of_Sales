@@ -11,7 +11,7 @@
         <div class="modal-content">
           <div class="modal-header py-2 bg-secondary text-light">
             <h5 class="modal-title" style="font-weight: bold">
-              {{ form.id ? "Edit" : "Create" }} Product Category
+              {{ form.id ? "Edit" : "Create" }} Product 
             </h5>
           </div>
           <div class="modal-body">
@@ -19,11 +19,15 @@
               <div class="row">
                 <div class="col-12 mb-3">
                   <label class="form-label required">Name</label>
-                  <input type="text" class="form-control" v-model="form.name"
+                  <input type="text" :class="['form-control', { 'is-invalid': errors.name }]" v-model="form.name"
                     ref="autofocus" />
-                  <!-- <span v-if="errors.name" class="invalid-feedback"> {{ errors.name[0] }} </span> -->
+                  <span v-if="errors.name" class="invalid-feedback"> {{ errors.name[0] }} </span>
                 </div>
-          
+                <!-- <div class="col-12 mb-3">
+                  <label class="form-label">Order</label>
+                  <input type="text" :class="['form-control', { 'is-invalid': errors.order }]" v-model="form.order" />
+                  <span v-if="errors.order" class="invalid-feedback"> {{ errors.order[0] }} </span>
+                </div> -->
               </div>
             </form>
           </div>
@@ -45,7 +49,7 @@
     </button>
 
     <div class="pagetitle">
-      <h1>Product Category</h1>
+      <h1>Deleted Product </h1>
     </div>
     <section class="section">
       <div class="col">
@@ -56,13 +60,15 @@
               <div class="row pt-4">
                 <div class="col-md-10">
                   <div class="row justify-content-start">
-                    <div class="col-lg-3 col-sm-6">
+                    <div class="col-lg-3 col-sm-6 mb-2">
                       <label class="form-label">Name</label>
                       <input type="text" class="form-control" v-model="filter.name" placeholder="Search..." />
                     </div>
                   </div>
                 </div>
-                <div class="d-flex justify-content-end gap-2">
+                <div class="card-footer bg-light">
+                  <div class="card-footer bg-light">
+  <div class="d-flex justify-content-end gap-2">
     <button
       type="button"
       class="btn btn-outline-danger"
@@ -70,14 +76,16 @@
     >
       <i class="bi bi-x-circle"></i> Clear
     </button>
+
     <button
-  type="button"
-  class="btn btn-primary"
-  @click="searchCategory()"
->
-  <i class="bi bi-search" ></i> Search
-</button>
+      type="submit"
+      class="btn btn-primary"
+    >
+      <i class="bi bi-search"></i> Search
+    </button>
   </div>
+</div>
+</div>
               </div>
             </form>
             <hr class="text-secondary" />
@@ -91,12 +99,14 @@
                     Name <i class="text-secondary"
                       :class="filter.sortBy == 'name' ? (filter.orderBy == 'desc' ? 'bi bi-sort-alpha-down-alt' : 'bi bi-sort-alpha-down') : 'bi bi-arrow-down-up'"></i>
                   </th>
-                  <!-- <th scope="col" @click="sortData('order')" style="cursor: pointer">
-                    Order <i class="text-secondary"
-                      :class="filter.sortBy == 'order' ? (filter.orderBy == 'desc' ? 'bi bi-sort-alpha-down-alt' : 'bi bi-sort-alpha-down') : 'bi bi-arrow-down-up'"></i>
-                  </th> -->
+               
                   <th scope="col" @click="sortData('created_at')" style="cursor: pointer" >
                     Created Time <i class="text-secondary"
+                      :class="filter.sortBy == 'created_at' ? (filter.orderBy == 'desc' ? 'bi bi-sort-alpha-down-alt' : 'bi bi-sort-alpha-down') : 'bi bi-arrow-down-up'"></i>
+                  </th>
+
+                  <th scope="col" @click="sortData('created_at')" style="cursor: pointer" >
+                    Deleted Time <i class="text-secondary"
                       :class="filter.sortBy == 'created_at' ? (filter.orderBy == 'desc' ? 'bi bi-sort-alpha-down-alt' : 'bi bi-sort-alpha-down') : 'bi bi-arrow-down-up'"></i>
                   </th>
                   <th scope="col" width="100px">
@@ -106,14 +116,17 @@
               <tbody v-if="dataList?.data?.length > 0" >
                 <tr v-for="(d, index) in dataList.data"
                   :key="d.id">
-                  <th scope="row">{{ index  + 1}}</th>
+                  <th scope="row">{{ index + 1 }}</th>
                 
                   <td>{{ d.name }}</td>
                   <!-- <td>{{ d.order }}</td> -->
                   <td>{{ dateFormat(d.created_at) }}</td>
-                  <td>
-                    <i class="bi bi-trash3-fill pe-3 text-danger" role="button" @click="deleteData(d.id)"></i>
-                    <i class="bi bi-pencil-square text-success" role="button" @click="editData(d.id)"></i>
+                
+
+                    <td>{{ dateFormat(d.deleted_at) }}</td>
+                    <td>
+                    <!-- <i class="bi bi-trash3-fill pe-3 text-danger" role="button" @click="deleteData(d.id)"></i> -->
+                    <i class="bi bi-lock-fill text-success text-9xl" role="button" @click="editData(d.id)"></i>
                   </td>
                 </tr>
              
@@ -156,42 +169,35 @@ import { clearForm, dateFormat, setFocus } from '../../helper.js';
 import ShareModal from '../share/Modal.vue';
 import axios from 'axios';
 import { useProductCategoryStore } from "@/store/productCategory";
+
 import Swal from "sweetalert2";
+
 
 const isLoading = ref(false);
 const formModalInstance = ref(null);
 const formModal = ref(null);
 const messageBox = ref(null);
 const autofocus = ref(null);
+
+
+
 const form = ref(
   {
-    id: null,
     name: null,
+  
  //   order: null
   }
 );
 const filter = ref(
   {
     name: null,
+
     sortBy: null,
     // orderBy: null,
     page: 1
   }
 );
-const dataList = ref([]);
-const errors = ref({});
 
-const Toast = Swal.mixin({
-  toast: true,
-  position: "top-end",
-  showConfirmButton: false,
-  timer: 3000,
-  timerProgressBar: true,
-  didOpen: (toast) => {
-    toast.onmouseenter = Swal.stopTimer;
-    toast.onmouseleave = Swal.resumeTimer;
-  },
-});
 
 const clearFilter = () =>{
   filter.value.name = null;
@@ -199,12 +205,21 @@ const clearFilter = () =>{
 }
 
 
+const Toast = Swal.mixin({
+  toast: true,
+  position: "top-end",
+  showConfirmButton: false,
+  timer: 5000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  },
+});
 
-// const clearForm = () => {
-//     form.value.id = null;
-//     form.value.name = null;
-// };
 
+const dataList = ref([]);
+const errors = ref({});
 onMounted(() => {
   if (formModal.value) {
     formModalInstance.value = new Modal(formModal.value);
@@ -215,11 +230,11 @@ onMounted(() => {
       document.activeElement?.blur();
     });
     formModal.value.addEventListener("hidden.bs.modal", () => {
-      // clearForm(form.value);
+      clearForm(form.value);
       errors.value = {};
     });
   }
-  getData(true);
+  // getData(true);
 });
 onUnmounted(() => {
   if (formModalInstance.value) {
@@ -234,118 +249,68 @@ const openModal = () => {
 };
 
 // submit form
-const searchCategory = () => {
-
-  if(!filter.value.name) return
-  isLoading.value = true;
-  errors.value = {};
-
-  axios.post("api/product-category/searchCategory", {
-    name: filter.value.name,
-  })
-  .then((response) => {
-    if (response.data.success) {
-      dataList.value = response.data; // not response.data
-    } else {
-      errors.value = response.data.errors || {};
-      setFocus(autofocus);
-    }
-  })
-  .catch((error) => {
-    console.error(error);
-
-    Toast.fire({
-      icon: "error",
-      title: "Unable to search product category.",
-    });
-
-    setFocus(autofocus);
-  })
-  .finally(() => {
-    isLoading.value = false;
-  });
-};
+// const saveData = () => {
+//   isLoading.value = true;
+//   axios[form.value.id > 0 ? "put" : "post"]("api/product-category/save", form.value)
+//     .then((response) => {
+//       if (response.data.success) {
+//         formModalInstance.value.hide();
+//         messageBox.value.showModal(1);
+//         getData();
+//       } else {
+//         errors.value = response.data.errors;
+//         setFocus(autofocus);
+//       }
+//     })
+//     .catch((ex) => {
+//       console.log(ex);
+//       setFocus(autofocus);
+//     })
+//     .finally(() => {
+//       isLoading.value = false;
+//     });
+// };
 
 const store = useProductCategoryStore();
 
 const saveData = async (e) => {
   e.preventDefault();
+  const result = await store.saveData(form.value);
 
-  try {
-    const result = await store.saveData(form.value);
-
-    if (result.success) {
-      formModalInstance.value.hide();
-
-      Toast.fire({
-        icon: "success",
-        title: "Product category saved successfully!",
-      });
-
-      getData(true);
-    } else {
-      errors.value = result.errors || {};
-
-      await Swal.fire({
-        icon: "error",
-        title: "Validation Error",
-        text: Object.values(errors.value)
-          .flat()
-          .join("\n"),
-      });
-
-      setFocus(autofocus);
-    }
-  } catch (error) {
-    console.error(error);
-
-    let message = "An unexpected error occurred.";
-
-    if (error.response) {
-      if (error.response.status === 422) {
-        message = Object.values(error.response.data.errors)
-          .flat()
-          .join("\n");
-      } else if (error.response.status === 500) {
-        message = error.response.data.message || "Internal server error.";
-      } else {
-        message =
-          error.response.data?.message || "Something went wrong.";
-      }
-    } else if (error.request) {
-      message = "Network error. Please check your internet connection.";
-    } else {
-      message = error.message;
-    }
-
-    await Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: message,
-    });
+  if (result.success) {
+    formModalInstance.value.hide();
+    messageBox.value.showModal(1);
+    getData();
+  } else {
+    errors.value = result.errors || {};
+    setFocus(autofocus);
   }
 };
 
 // load data
-const getData = (resetPge = false, e) => {
-  // e.preventDefault();
-
+const getData = (resetPage = false) => {
   isLoading.value = true;
-  if (resetPge)
+
+  if (resetPage) {
     filter.value.page = 1;
-  axios.post("api/product-category/list", filter.value).then((response) => {
-    if (response.data.success) {
-      dataList.value = response.data.data;
-    }
-  })
-    .catch((ex) => {
-      console.log(ex);
+  }
+
+  axios
+    .post("api/product/product-deleted", {
+      name: filter.value.name,
+    })
+    .then((response) => {
+      if (response.data.success) {
+        dataList.value = response.data;
+      }
+    })
+    .catch((error) => {
+      console.error(error);
     })
     .finally(() => {
       isLoading.value = false;
     });
 };
-
 // Pagination
 const paginate = (page_number) => {
   filter.value.page = page_number;
@@ -369,29 +334,82 @@ const sortData = (field) => {
   getData();
 };
 
-// edit
+// // edit
+// const editData = async (id) => {
+//   isLoading.value = true;
+
+//   try {
+//     const response = await axios.get("api/product/product-deleted/edit/" + id);
+
+//     const data = response.data.data || response.data;
+
+//     // Map only existing keys
+//     Object.keys(form.value).forEach((key) => {
+//       if (data[key] !== undefined) {
+//         form.value[key] = data[key];
+//       }
+//     });
+
+//     // If backend uses different naming
+//     form.value.category_name = data.name ?? null;
+
+//     formModalInstance.value.show();
+
+//   } catch (ex) {
+//     console.error(ex);
+//   } finally {
+//     isLoading.value = false;
+//   }
+// };
+
+
 const editData = async (id) => {
+  const result = await Swal.fire({
+    title: "Restore Product?",
+    html: `
+      This product is currently <strong>deleted</strong>.<br><br>
+      It will be <strong>restored</strong> before you can edit it.
+    `,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#198754",
+    cancelButtonColor: "#6c757d",
+    confirmButtonText: '<i class="bi bi-arrow-clockwise"></i> Restore & Edit',
+    cancelButtonText: '<i class="bi bi-x-circle"></i> Cancel',
+    reverseButtons: true,
+  });
+
+  if (!result.isConfirmed) return;
+
   isLoading.value = true;
 
   try {
-    const response = await axios.get("api/product-category/edit/" + id);
+    const { data } = await axios.post(
+      `api/product/product-deleted/edit/${id}`
+    );
 
-    const data = response.data.data || response.data;
+    if (data.success) {
+      Object.assign(form.value, data.data);
 
-    // Map only existing keys
-    Object.keys(form.value).forEach((key) => {
-      if (data[key] !== undefined) {
-        form.value[key] = data[key];
-      }
+      Toast.fire({
+        icon: "success",
+        title: "Product restored successfully!",
+      });
+
+      getData();
+
+     // Refresh deleted products list
+    }
+  } catch (error) {
+    console.error(error);
+
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text:
+        error.response?.data?.message ||
+        "Unable to restore product.",
     });
-
-    // If backend uses different naming
-    form.value.name = data.name ?? null;
-
-    formModalInstance.value.show();
-
-  } catch (ex) {
-    console.error(ex);
   } finally {
     isLoading.value = false;
   }

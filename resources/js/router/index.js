@@ -50,10 +50,17 @@ const routes = [
                 path: "/productinventory",
                 component: () => import("@/component/data/ProductInventory.vue")
             },
+
             {
                 path: "/product-category",
                 component: () => import("@/component/data/ProductCategory.vue")
             },
+
+            {
+                path: "/product-deleted",
+                component: () => import("@/component/data/ProductDeleted.vue")
+            },
+
             // ========= Operation =========
             {
                 path: "/balance-adjustment",

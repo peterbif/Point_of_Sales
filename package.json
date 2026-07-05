@@ -18,7 +18,6 @@
     "dependencies": {
         "bootstrap": "^5.3.7",
         "bootstrap-icons": "^1.13.1",
-        "bootstrap-vue": "^2.23.1",
         "dayjs": "^1.11.20",
         "jsbarcode": "^3.12.3",
         "lodash": "^4.17.23",

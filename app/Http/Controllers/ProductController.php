@@ -62,11 +62,12 @@ class ProductController extends Controller
     // }
 
 
-    public function list(Request $request)
+
+    public function searchProduct(Request $request)
 {
     try {
         // Latest stock alert
-        $stockAlert = StockAlerts::latest()->first();
+      //  $stockAlert = StockAlerts::latest()->first();
 
         // Validate inputs
         $validated = $request->validate([
@@ -113,7 +114,63 @@ class ProductController extends Controller
         return response()->json([
             'success' => true,
             'data' => $products,
-            'stockalert' => $stockAlert,
+            //'stockalert' => $stockAlert,
+        ]);
+
+    } catch (\Throwable $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong',
+            'error' => config('app.debug') ? $e->getMessage() : null,
+        ], 500);
+    }
+}
+
+    public function list(Request $request)
+
+
+{
+    try {
+        // Latest stock alert
+      //  $stockAlert = StockAlerts::latest()->first();
+
+        // Validate inputs
+        $validated = $request->validate([
+        'sortBy' => 'nullable|string|in:products.updated_at,products.name,products.unit_price,products.created_at',
+            'orderBy' => 'nullable|string|in:asc,desc',
+        ]);
+
+ 
+        $sortBy = $validated['sortBy'] ?? 'products.updated_at';
+        $orderBy = $validated['orderBy'] ?? 'desc';
+
+        // Query
+        $products = Product::query()
+            ->join('product_categories', 'product_categories.id', '=', 'products.product_category_id')
+            ->select([
+                'products.id',
+                'products.name',
+                'products.image',
+                'products.inventory',
+                'products.unit_price',
+                'products.barcode',
+                'products.expiry_date',
+                'products.created_at',
+                'products.wholesales_price',
+                'products.stock_alert_days',
+                'products.stock_alert_qty_very_low',
+                'products.stock_alert_qty_low',
+
+                'product_categories.name as category_name',
+            ])
+            ->orderBy($sortBy, $orderBy)
+            // ->limit(20)
+            ->paginate(20);
+
+        return response()->json([
+            'success' => true,
+            'data' => $products,
+            //'stockalert' => $stockAlert,
         ]);
 
     } catch (\Throwable $e) {
@@ -349,6 +406,39 @@ class ProductController extends Controller
             ], 500);
         }
     }
+
+
+
+    public function productDeleted(Request $request)
+    {
+        $deletedProduct = Product::onlyTrashed()
+            ->when($request->name, function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->name . '%');
+            })
+            ->orderBy('name')
+            ->get();
+    
+        return response()->json([
+            'success' => true,
+            'data' => $deletedProduct
+        ]);
+    }
+
+
+    public function editDeleted(Request $request, $id)
+    {
+        $product = Product::onlyTrashed()->findOrFail($id);
+    
+        $product->restore();
+    
+        $product->updated_by_id = $request->user()->id;
+        $product->save();
+    
+        return response()->json([
+            'success' => true,
+            'data' => $product,
+        ]);
+    }
    
    
     public function save(Request $request)
@@ -490,17 +580,23 @@ class ProductController extends Controller
     );
 }
 
-    public function delete(Request $request)
-    {
-        $data = Product::findOrFail($request->id);
-        $data->deleted_id = $request->user()->id;
-        $data->delete();
-        // delete uploaded file
-        if ($data->image && Storage::disk('public')->exists($data->image)) {
-            Storage::disk('public')->delete($data->image);
-        }
-        return response()->json();
+public function delete(Request $request)
+{
+    $data = Product::findOrFail($request->id);
+
+    $data->deleted_by_id = $request->user()->id;
+    $data->save();
+
+    if ($data->image && Storage::disk('public')->exists($data->image)) {
+        Storage::disk('public')->delete($data->image);
     }
+
+    $data->delete();
+
+    return response()->json([
+        'success' => true
+    ]);
+}
 
     public function categoryList()
     {

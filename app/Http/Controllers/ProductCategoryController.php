@@ -6,6 +6,8 @@ use App\Models\ProductCategory;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+
 
 class ProductCategoryController extends Controller
 {
@@ -33,41 +35,106 @@ class ProductCategoryController extends Controller
     }
 
 
+    public function searchCategory(Request $request)
+{
+
+    //  return 1;.
+    $query = ProductCategory::query();
+
+    if ($request->filled('name')) {
+        $query->where('name', 'like', "%{$request->name}%");
+    }
+
+    return response()->json([
+        'success' => true,
+        'data' => $query->latest()->get(),
+    ]);
+}
+
+
+    // public function save(Request $request)
+    // {
+    //     sleep(1);
+    //     $validator = Validator::make($request->all(), [
+    //         'name' => 'required|unique:product_categories,name,' . $request->id,
+    //         //'order' => 'nullable|numeric',
+    //     ]);
+    //     if ($validator->fails()) {
+    //         return response()->json(
+    //             [
+    //                 'success' => false,
+    //                 'errors' => $validator->errors()
+    //             ]
+    //         );
+    //     }
+    //     try {
+    //         // DB::beginTransaction();
+    //         if ($request->id > 0) {
+    //             $data = ProductCategory::find($request->id);
+    //         } else {
+    //             $data = new ProductCategory();
+    //             $data->created_by_id = $request->user()->id;
+    //         }
+
+    //         $data->updated_by_id = $request->user()->id;
+    //         $data->name = $request->name;
+    //        // $data->order = $request->order;
+    //         $data->save();
+    //         $response['success'] = true;
+    //         $response['id'] =$data->id;
+    //         // DB::commit();
+    //     } catch (Exception $ex) {
+    //         abort($ex->getCode(), $ex->getMessage());
+    //     }
+    //     return response()->json($response);
+    // }
+
+
+
+
+
     public function save(Request $request)
     {
-        sleep(3);
         $validator = Validator::make($request->all(), [
-            'category_name' => 'required|unique:product_categories,name,' . $request->id,
-            //'order' => 'nullable|numeric',
+            'name' => [
+                'required',
+                Rule::unique('product_categories', 'name')->ignore($request->id),
+            ],
         ]);
+    
         if ($validator->fails()) {
-            return response()->json(
-                [
-                    'success' => false,
-                    'errors' => $validator->errors()
-                ]
-            );
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ]);
         }
+    
         try {
-            // DB::beginTransaction();
-            if ($request->id > 0) {
-                $data = ProductCategory::find($request->id);
-            } else {
-                $data = new ProductCategory();
+            $data = $request->filled('id')
+                ? ProductCategory::findOrFail($request->id)
+                : new ProductCategory();
+    
+            if (!$request->filled('id')) {
                 $data->created_by_id = $request->user()->id;
             }
-
+    
             $data->updated_by_id = $request->user()->id;
-            $data->name = $request->category_name;
-           // $data->order = $request->order;
+            $data->name = $request->name;
             $data->save();
-            $response['success'] = true;
-            $response['id'] =$data->id;
-            // DB::commit();
-        } catch (Exception $ex) {
-            abort($ex->getCode(), $ex->getMessage());
+    
+            return response()->json([
+                'success' => true,
+                'id' => $data->id,
+                'message' => $request->filled('id')
+                    ? 'Category updated successfully.'
+                    : 'Category created successfully.',
+            ]);
+        } catch (\Exception $ex) {
+            return response()->json([
+                'success' => false,
+                'message' => $ex->getMessage(),
+            ], 500);
         }
-        return response()->json($response);
     }
 
     public function edit(Request $request)
